@@ -1,0 +1,86 @@
+== create vite (npmmirror) ==
+Need to install the following packages:
+create-vite@8.2.0
+Ok to proceed? (y) 
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'create-vite@8.2.0',
+npm warn EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+
+> npx
+> create-vite frontend --template react-ts
+
+[?25l│
+◆  Use rolldown-vite (Experimental)?:
+│
+└
+[999D[4A[1B[J◇  Use rolldown-vite (Experimental)?:
+│  No
+[?25h[?25l│
+◆  Install with npm and start now?
+│  ● Yes / ○ No
+└
+[999D[4A[1B[J◇  Install with npm and start now?
+│  Yes
+[?25h│
+◇  Scaffolding project in /Users/yoko/Documents/trae_projects/Test/kaoshi/frontend...
+│
+◇  Installing dependencies with npm...
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@vitejs/plugin-react@5.1.2',
+npm warn EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'vite@7.3.1',
+npm warn EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+
+added 175 packages in 3m
+
+45 packages are looking for funding
+  run `npm fund` for details
+│
+◇  Starting dev server...
+
+> frontend@0.0.0 dev
+> vite
+
+You are using Node.js 18.20.8. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.
+error when starting dev server:
+TypeError: crypto.hash is not a function
+    at getHash (file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:2444:19)
+    at getLockfileHash (file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:32383:9)
+    at getDepHash (file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:32386:23)
+    at initDepsOptimizerMetadata (file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:31845:53)
+    at createDepsOptimizer (file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:34033:17)
+    at new DevEnvironment (file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:34807:109)
+    at Object.defaultCreateClientDevEnvironment [as createEnvironment] (file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:35219:9)
+    at file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:25390:52
+    at Array.map (<anonymous>)
+    at _createServer (file:///Users/yoko/Documents/trae_projects/Test/kaoshi/frontend/node_modules/vite/dist/node/chunks/config.js:25389:58)
+npm error code 1
+npm error path /Users/yoko/Documents/trae_projects/Test/kaoshi
+npm error command failed
+npm error command sh -c create-vite frontend --template react-ts
+npm error A complete log of this run can be found in: /Users/yoko/.npm/_logs/2026-01-28T06_42_26_759Z-debug-0.log
+      274.85 real        19.21 user         7.18 sys
+           497909760  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              464294  page reclaims
+                 922  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                 667  messages sent
+               11742  messages received
+                   2  signals received
+                4293  voluntary context switches
+              161195  involuntary context switches
+          3852917942  instructions retired
+          3489415895  cycles elapsed
+            49340416  peak memory footprint
