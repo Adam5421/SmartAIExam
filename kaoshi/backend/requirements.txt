@@ -3,5 +3,10 @@ uvicorn
 sqlalchemy
 pydantic
 python-docx
-reportlab==3.6.12
+reportlab
 python-multipart
+agno
+openai
+slowapi
+markdown
+pypdf

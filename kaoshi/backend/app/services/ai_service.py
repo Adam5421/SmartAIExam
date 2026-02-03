@@ -2,8 +2,13 @@ import random
 import os
 import json
 from typing import List
+from pydantic import BaseModel
 from app.schemas_ai import AIGeneratedQuestion
-from openai import OpenAI
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+class QuestionResponse(BaseModel):
+    questions: List[AIGeneratedQuestion]
 
 class AIService:
     @staticmethod
@@ -17,8 +22,7 @@ class AIService:
     ) -> List[AIGeneratedQuestion]:
         """
         调用 LLM 生成题目。
-        优先尝试使用环境变量中的 OPENAI_API_KEY。
-        如果未配置，则回退到 Mock 数据，并在题目内容中标注。
+        使用 AGNO 框架。
         """
         api_key = os.getenv("OPENAI_API_KEY")
         base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
@@ -33,8 +37,6 @@ class AIService:
 
         if api_key:
             try:
-                client = OpenAI(api_key=api_key, base_url=base_url)
-                
                 req_desc = []
                 if single_choice_count > 0: req_desc.append(f"{single_choice_count} 道单选题 (single)")
                 if multi_choice_count > 0: req_desc.append(f"{multi_choice_count} 道多选题 (multi)")
@@ -50,37 +52,21 @@ class AIService:
                 具体要求如下：
                 1. 难度系数：{difficulty} (1-5，1为最简单)
                 2. 题型分布：{req_str}。
-                3. 返回严格的 JSON 格式列表，不要包含 Markdown 标记。
-                4. JSON 结构示例：
-                [
-                    {{
-                        "content": "题目描述",
-                        "q_type": "single|multi|judge|essay",
-                        "options": ["A.选项1", "B.选项2"], (简答题可为 null)
-                        "answer": "A" (多选为 "A,B", 判断为 "正确"/"错误", 简答为参考答案),
-                        "analysis": "解析",
-                        "difficulty": 1,
-                        "tags": ["标签1"]
-                    }}
-                ]
+                3. 请严格按照定义的结构返回数据。
                 """
                 
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.7
+                agent = Agent(
+                    model=OpenAIChat(
+                        id=model,
+                        api_key=api_key,
+                        base_url=base_url
+                    ),
+                    description="你是一个专业的出题老师。",
+                    response_model=QuestionResponse,
                 )
-                
-                content = response.choices[0].message.content
-                # 尝试清洗 Markdown 标记
-                if content.startswith("```json"):
-                    content = content.replace("```json", "").replace("```", "")
-                
-                data = json.loads(content)
-                results = []
-                for item in data:
-                    results.append(AIGeneratedQuestion(**item))
-                return results
+
+                response = agent.run(prompt)
+                return response.content.questions
 
             except Exception as e:
                 import traceback
@@ -98,6 +84,7 @@ class AIService:
                         tags=["系统错误"]
                     )
                 ]
+
         
         print("未检测到 OPENAI_API_KEY，回退到 Mock 模式")
         return MockAIService.generate_questions(text, total_questions, difficulty)
