@@ -17,7 +17,6 @@ import {
   Tabs,
   Tag,
   TreeSelect,
-  Radio,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { DataNode } from 'antd/es/tree'
@@ -99,15 +98,6 @@ export default function QuestionsPage() {
   }>({})
 
   const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 })
-  
-  // Batch Review States
-  const [reviewMode, setReviewMode] = useState<'unified' | 'individual'>('unified')
-  const [individualComments, setIndividualComments] = useState<Record<number, string>>({})
-  const [batchActionModal, setBatchActionModal] = useState<{
-    open: boolean
-    type: 'pass' | 'reject' | 'needs_modification'
-  }>({ open: false, type: 'pass' })
-  const [batchComment, setBatchComment] = useState('')
 
   async function refresh(page = pagination.current, pageSize = pagination.pageSize) {
     setLoading(true)
@@ -124,7 +114,6 @@ export default function QuestionsPage() {
       setPagination(p => ({ ...p, current: page, pageSize, total: res.total }))
       setTags(tagItems)
       setSelectedRowKeys([])
-      setIndividualComments({})
     } catch (e) {
       console.error(e)
       message.error('加载数据失败')
@@ -199,46 +188,6 @@ export default function QuestionsPage() {
       okType: 'danger',
       onOk: handleBatchDelete
     })
-  }
-
-  async function handleBatchAction() {
-    if (selectedRowKeys.length === 0) return
-
-    try {
-      const statusMap = {
-        'pass': 'published',
-        'reject': 'draft', // or disabled
-        'needs_modification': 'needs_modification'
-      }
-      const status = statusMap[batchActionModal.type]
-      
-      if (reviewMode === 'unified') {
-          await batchOperateQuestions({
-            ids: selectedRowKeys as number[],
-            action: 'update_status',
-            value: status,
-            comment: batchComment
-          })
-      } else {
-          const items = (selectedRowKeys as number[]).map(id => ({
-              id,
-              value: status,
-              comment: individualComments[id] || ''
-          }))
-          await batchOperateQuestions({
-              action: 'update_status',
-              items: items
-          })
-      }
-      
-      message.success(`批量操作成功`)
-      setBatchActionModal({ ...batchActionModal, open: false })
-      setBatchComment('')
-      refresh()
-    } catch (e) {
-      console.error(e)
-      message.error('操作失败')
-    }
   }
 
   const [batchDifficultyOpen, setBatchDifficultyOpen] = useState(false)
@@ -449,28 +398,9 @@ export default function QuestionsPage() {
       },
     ]
 
-    if (reviewMode === 'individual' && batchActionModal.open) {
-         cols.splice(cols.length - 1, 0, {
-             title: '审核意见',
-             key: 'comment',
-             width: 200,
-             render: (_, record) => (
-                 <Input 
-                     placeholder="请输入审核意见"
-                     value={individualComments[record.id] || ''}
-                     onChange={e => setIndividualComments(prev => ({
-                         ...prev,
-                         [record.id]: e.target.value
-                     }))}
-                     onClick={e => e.stopPropagation()}
-                 />
-             )
-         })
-    }
-    
     return cols
   },
-    [form, reviewMode, individualComments, batchActionModal.open]
+    [form]
   )
 
   async function onSubmit() {
@@ -656,9 +586,6 @@ export default function QuestionsPage() {
           <Button icon={<DownloadOutlined />} onClick={handleExport}>导出结果</Button>
           {selectedRowKeys.length > 0 && (
             <>
-              <Button onClick={() => setBatchActionModal({ open: true, type: 'pass' })} style={{ borderColor: '#52c41a', color: '#52c41a' }}>批量通过</Button>
-              <Button onClick={() => setBatchActionModal({ open: true, type: 'needs_modification' })} style={{ borderColor: '#faad14', color: '#faad14' }}>批量需修改</Button>
-              <Button onClick={() => setBatchActionModal({ open: true, type: 'reject' })} danger>批量驳回</Button>
               <Button onClick={() => setBatchDifficultyOpen(true)}>批量改难度</Button>
               <Button onClick={() => setBatchTagsOpen(true)}>批量改标签</Button>
               <Button danger onClick={confirmBatchDelete}>批量删除</Button>
@@ -886,37 +813,6 @@ export default function QuestionsPage() {
             treeDefaultExpandAll
           />
         </div>
-      </Modal>
-
-      {/* Batch Action Modal */}
-      <Modal
-          title={`批量${batchActionModal.type === 'pass' ? '通过' : batchActionModal.type === 'reject' ? '驳回' : '需修改'}`}
-          open={batchActionModal.open}
-          onOk={handleBatchAction}
-          onCancel={() => setBatchActionModal({ ...batchActionModal, open: false })}
-          width={600}
-      >
-          <div style={{ marginBottom: 16 }}>
-              <span style={{ marginRight: 16 }}>审核模式：</span>
-              <Radio.Group value={reviewMode} onChange={e => setReviewMode(e.target.value)} buttonStyle="solid">
-                  <Radio.Button value="unified">统一意见</Radio.Button>
-                  <Radio.Button value="individual">逐条意见</Radio.Button>
-              </Radio.Group>
-          </div>
-          
-          {reviewMode === 'unified' ? (
-              <Input.TextArea
-                  rows={4}
-                  placeholder="请输入统一的审核意见"
-                  value={batchComment}
-                  onChange={e => setBatchComment(e.target.value)}
-              />
-          ) : (
-              <div style={{ maxHeight: 400, overflow: 'auto' }}>
-                  <p>请在下方表格中输入每条题目的审核意见（见最右侧列）</p>
-                  <p style={{ color: '#999' }}>* 切换到逐条模式后，请直接点击“确定”提交，系统将收集表格中的意见。</p>
-              </div>
-          )}
       </Modal>
     </div>
   )
