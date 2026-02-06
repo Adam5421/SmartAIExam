@@ -23,7 +23,7 @@ async def parse_upload_file(request: Request, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/generate", response_model=List[AIGeneratedQuestion])
-@limiter.limit("5/minute")
+@limiter.limit("50/minute")
 def generate_questions_by_ai(req: AIGenerateRequest, request: Request):
     """
     接收文本，调用 AI 生成题目。
@@ -37,7 +37,9 @@ def generate_questions_by_ai(req: AIGenerateRequest, request: Request):
             single_choice_count=req.single_choice_count,
             multi_choice_count=req.multi_choice_count,
             judge_count=req.judge_count,
-            essay_count=req.essay_count
+            essay_count=req.essay_count,
+            tag_l1=req.tag_l1,
+            tag_l2=req.tag_l2
         )
         return questions
     except Exception as e:

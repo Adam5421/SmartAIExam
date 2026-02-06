@@ -26,6 +26,8 @@ export default function AIPage() {
   const [multiCount, setMultiCount] = useState(0)
   const [judgeCount, setJudgeCount] = useState(0)
   const [essayCount, setEssayCount] = useState(0)
+  const [tagL1, setTagL1] = useState('')
+  const [tagL2, setTagL2] = useState('')
 
   const [loading, setLoading] = useState(false)
   const [parsing, setParsing] = useState(false)
@@ -67,6 +69,8 @@ export default function AIPage() {
         multi_choice_count: multiCount,
         judge_count: judgeCount,
         essay_count: essayCount,
+        tag_l1: tagL1 || undefined,
+        tag_l2: tagL2 || undefined,
       })
       setGeneratedQuestions(data)
       message.success(`生成成功，共 ${data.length} 道题目`)
@@ -186,6 +190,19 @@ export default function AIPage() {
                       <Option value={4}>4 - 困难</Option>
                       <Option value={5}>5 - 专家</Option>
                     </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item label="一级标签">
+                    <Input placeholder="例如：语文" value={tagL1} onChange={e => setTagL1(e.target.value)} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="二级标签">
+                    <Input placeholder="例如：古诗词" value={tagL2} onChange={e => setTagL2(e.target.value)} />
                   </Form.Item>
                 </Col>
               </Row>

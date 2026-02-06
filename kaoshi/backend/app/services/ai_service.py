@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from app.schemas_ai import AIGeneratedQuestion
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
+from typing import List, Optional
 
 class QuestionResponse(BaseModel):
     questions: List[AIGeneratedQuestion]
@@ -18,7 +19,9 @@ class AIService:
         single_choice_count: int = 0,
         multi_choice_count: int = 0,
         judge_count: int = 0,
-        essay_count: int = 0
+        essay_count: int = 0,
+        tag_l1: Optional[str] = None,
+        tag_l2: Optional[str] = None
     ) -> List[AIGeneratedQuestion]:
         """
         调用 LLM 生成题目。
@@ -34,6 +37,8 @@ class AIService:
             # Default fallback if no specific counts provided
             single_choice_count = 3
             total_questions = 3
+
+        generated_questions = []
 
         if api_key:
             try:
@@ -59,21 +64,28 @@ class AIService:
                     model=OpenAIChat(
                         id=model,
                         api_key=api_key,
-                        base_url=base_url
+                        base_url=base_url,
+                        role_map={
+                            "system": "system",
+                            "user": "user",
+                            "assistant": "assistant",
+                            "tool": "tool",
+                        },
                     ),
                     description="你是一个专业的出题老师。",
-                    response_model=QuestionResponse,
+                    output_schema=QuestionResponse,
+                    use_json_mode=True,
                 )
 
                 response = agent.run(prompt)
-                return response.content.questions
+                generated_questions = response.content.questions
 
             except Exception as e:
                 import traceback
                 error_msg = f"AI 调用失败: {str(e)}\n{traceback.format_exc()}"
                 print(error_msg)
                 # Fallback to mock with error details
-                return [
+                generated_questions = [
                     AIGeneratedQuestion(
                         content=f"❌ AI 调用出错: {str(e)}",
                         q_type="single",
@@ -84,10 +96,20 @@ class AIService:
                         tags=["系统错误"]
                     )
                 ]
+        else:
+            print("未检测到 OPENAI_API_KEY，回退到 Mock 模式")
+            generated_questions = MockAIService.generate_questions(text, total_questions, difficulty)
 
+        # Apply manual tags if provided
+        manual_tags = []
+        if tag_l1: manual_tags.append(tag_l1)
+        if tag_l2: manual_tags.append(tag_l2)
         
-        print("未检测到 OPENAI_API_KEY，回退到 Mock 模式")
-        return MockAIService.generate_questions(text, total_questions, difficulty)
+        if manual_tags:
+            for q in generated_questions:
+                q.tags = manual_tags
+        
+        return generated_questions
 
 class MockAIService:
     @staticmethod

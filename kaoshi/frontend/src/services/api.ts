@@ -252,6 +252,8 @@ export async function generateAIQuestions(payload: {
   multi_choice_count?: number
   judge_count?: number
   essay_count?: number
+  tag_l1?: string
+  tag_l2?: string
 }): Promise<AIGeneratedQuestion[]> {
   const res = await api.post<AIGeneratedQuestion[]>('/ai/generate', payload)
   return res.data

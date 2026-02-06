@@ -9,6 +9,8 @@ class AIGenerateRequest(BaseModel):
     multi_choice_count: int = 0
     judge_count: int = 0
     essay_count: int = 0
+    tag_l1: Optional[str] = None
+    tag_l2: Optional[str] = None
 
 class AIGeneratedQuestion(BaseModel):
     content: str
